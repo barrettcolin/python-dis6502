@@ -400,3 +400,6 @@ class Memory(object):
             instr = self.dis_instruction(addr)
             yield addr, instr
             addr += instr.opcode.size
+
+    def default_code_refs(self):
+        return []

@@ -91,3 +91,6 @@ class Memory(memory.Memory):
             syms.update(symbols)
 
         return cls(memory, org, symbols=syms)
+
+    def default_code_refs(self):
+        return [self.end - 4]

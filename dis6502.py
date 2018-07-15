@@ -16,10 +16,9 @@
 
 # -*- coding: utf-8 -*-
 
+import importlib
 import logging
 import sys
-
-import atari2600
 
 def smart_int(s):
     if s.startswith('0x'):
@@ -40,7 +39,8 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description="Disassemble an Atari 2600 ROM")
 
-    parser.add_argument('romfile', type=argparse.FileType('r'))
+    parser.add_argument('romfile', type=argparse.FileType('rb'))
+    parser.add_argument('--target', default='atari2600')
     parser.add_argument('--loglevel', default='warn', action='store', choices=('debug', 'info', 'warn'))
     parser.add_argument('--org', default=None, type=smart_int)
     parser.add_argument('--code', type=smart_int, nargs='*')
@@ -60,7 +60,8 @@ def main():
     logging.basicConfig(level=getattr(logging, args.loglevel.upper()),
                         format='%(levelname)s:%(message)s')
 
-    memory = atari2600.Memory.from_file(args.romfile, args.org)
+    memory_class = getattr(importlib.import_module(args.target), 'Memory')
+    memory = memory_class.from_file(args.romfile, args.org)
 
     if args.symbol:
         for symbol, value in args.symbol:
@@ -68,7 +69,7 @@ def main():
 
     logging.info('Loaded memory %r' % memory)
 
-    code_refs = [memory.end - 4]
+    code_refs = memory.default_code_refs()
     if args.code_ref:
         code_refs.extend(args.code_ref)
 
